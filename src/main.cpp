@@ -1,14 +1,23 @@
 #include <Arduino.h>
 
 void setup() {
-  // put your setup code here, to run once:
+  // Configure IOs
   pinMode(LED_BUILTIN, OUTPUT);
+
+  //Configure Serial
+  Serial.begin(115200);
+  while(!Serial);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+  //Serial Hello World
+  Serial.println("Hello");
+  delay(3000);
+
+  // Blink Led
   digitalWrite(LED_BUILTIN, HIGH);
   delay(100);
   digitalWrite(LED_BUILTIN, LOW);
-  delay(1000);
+  delay(100);
 }
