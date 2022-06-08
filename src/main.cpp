@@ -20,15 +20,16 @@
 
 void LED_builtin_blink(void *pvParameters);
 void LED_blue_blink(void *pvParameters);
+void dumb_delay(uint32_t count);
 
 
 void setup() {
   //Configure Serial
-  Serial.begin(115200);
-  while(!Serial);
+  /*Serial.begin(115200);
+  while(!Serial);*/
 
   //RTOS Priority
-  Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
+  //Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
   
 
   xTaskCreatePinnedToCore(LED_builtin_blink,
@@ -50,8 +51,8 @@ void setup() {
 }
 
 void loop() {
-  delay(2000);
-  Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
+  //delay(2000);
+  //Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
   
 }
 
@@ -59,7 +60,7 @@ void loop() {
 
 
 void LED_builtin_blink(void *pvParameters){
-  Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
+  //Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
 
   // Configure IOs
   pinMode(LED_BUILTIN, OUTPUT);
@@ -68,12 +69,13 @@ void LED_builtin_blink(void *pvParameters){
   for(;;){
     LedState = !LedState;
     digitalWrite(LED_BUILTIN, LedState);
-    vTaskDelay(pdMS_TO_TICKS(500));
+    dumb_delay(500);
+    //vTaskDelay(pdMS_TO_TICKS(500));
   }
 }
 
 void LED_blue_blink(void *pvParameters){
-  Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
+  //Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
   
   // Configure IOs
   pinMode(LED_BLUE, OUTPUT);
@@ -82,6 +84,20 @@ void LED_blue_blink(void *pvParameters){
   for(;;){
     LedStateBlue = !LedStateBlue;
     digitalWrite(LED_BLUE, LedStateBlue);
-    vTaskDelay(pdMS_TO_TICKS(1500));
+    dumb_delay(1500);
+    //vTaskDelay(pdMS_TO_TICKS(1500));
+  }
+}
+
+
+
+void dumb_delay(uint32_t count)
+{
+  volatile uint32_t cpt, i;
+  
+  for (i = 0; i < count; i++) {
+    for (cpt = 0; cpt < 10000; cpt++) {
+      
+    }
   }
 }
