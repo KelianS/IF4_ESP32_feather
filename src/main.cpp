@@ -5,9 +5,9 @@
 
 #include <Arduino.h>
 #define BP_S1 digitalPinToInterrupt(GPIO_NUM_14)
+#define LED_RED 16
 #define LED_GREEN 19
 #define LED_BLUE 4
-
 
 
 #if CONFIG_FREERTOS_UNICORE
@@ -18,35 +18,44 @@
 
 
 
-void LED_builtin_blink(void *pvParameters);
-void LED_blue_blink(void *pvParameters);
+/***** PROTOTYPE *****/
+void LED_blink(void *pvParameters);
 void dumb_delay(uint32_t count);
+
+
+/***** GLOBAL *****/
+  //LED list
+const uint8_t leds[] = {LED_RED, LED_GREEN, LED_BLUE};
+  
 
 
 void setup() {
   //Configure Serial
-  /*Serial.begin(115200);
-  while(!Serial);*/
+  Serial.begin(115200);
+  while(!Serial);
 
   //RTOS Priority
   //Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
-  
 
-  xTaskCreatePinnedToCore(LED_builtin_blink,
-                          "LED_BUILTIN_TASK",
-                          1024,
-                          nullptr,
+
+  xTaskCreatePinnedToCore(LED_blink,
+                          "LED_RED",
+                          2048,
+                          (void*) &leds[0],
                           1,
                           NULL,
-                          1);
+                          tskNO_AFFINITY);
 
-  xTaskCreatePinnedToCore(LED_blue_blink,
-                          "LED_BLUE_TASK",
+  Serial.println(leds[2]);
+  vTaskDelay(pdMS_TO_TICKS(1000));
+  xTaskCreatePinnedToCore(LED_blink,
+                          "LED_BLUE",
                           1024,
-                          nullptr,
+                          (void*) &leds[2],
                           1,
                           NULL,
-                          1);
+                          tskNO_AFFINITY);
+    
 
 }
 
@@ -58,34 +67,20 @@ void loop() {
 
 
 
-
-void LED_builtin_blink(void *pvParameters){
+void LED_blink(void *pvParameters){
   //Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
-
+  
   // Configure IOs
-  pinMode(LED_BUILTIN, OUTPUT);
+  uint8_t pin = *(uint8_t*)pvParameters;
+  Serial.println(pin);
+  pinMode(pin, OUTPUT);
   int LedState = LOW;
 
   for(;;){
     LedState = !LedState;
-    digitalWrite(LED_BUILTIN, LedState);
-    dumb_delay(500);
-    //vTaskDelay(pdMS_TO_TICKS(500));
-  }
-}
-
-void LED_blue_blink(void *pvParameters){
-  //Serial.print("Task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
-  
-  // Configure IOs
-  pinMode(LED_BLUE, OUTPUT);
-  int LedStateBlue = LOW;
-
-  for(;;){
-    LedStateBlue = !LedStateBlue;
-    digitalWrite(LED_BLUE, LedStateBlue);
-    dumb_delay(1500);
-    //vTaskDelay(pdMS_TO_TICKS(1500));
+    digitalWrite(pin, LedState);
+    //dumb_delay(1500);
+    vTaskDelay(pdMS_TO_TICKS(1500));
   }
 }
 
