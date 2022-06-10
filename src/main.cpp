@@ -30,9 +30,32 @@ void setup() {
   while(!Serial);
   
   xTaskCreatePinnedToCore(
-    TaskBlinkPeriodic,  //Function
+    TaskBlink,  //Function
+    "Blink red",       //Name
+    2048,               //Stack size
+    (void*)&LED_RED,    //Parameters
+    5,                  //Priority
+    nullptr,            //Task handle
+    APP_CORE);          //Core
+
+
+
+
+  xTaskCreatePinnedToCore(
+    TaskBlink,  //Function
+    "Blink green",       //Name
+    2048,               //Stack size
+    (void*)&LED_GREEN,    //Parameters
+    4,                  //Priority
+    nullptr,            //Task handle
+    APP_CORE);          //Core
+
+    vTaskDelay(pdMS_TO_TICKS(1));
+
+  xTaskCreatePinnedToCore(
+    TaskBlink,  //Function
     "Blink blue",       //Name
-    1024,               //Stack size
+    2048,               //Stack size
     (void*)&LED_BLUE,    //Parameters
     5,                  //Priority
     nullptr,            //Task handle
@@ -46,12 +69,41 @@ void loop()
   vTaskDelete(nullptr);
 }
 
+
+/*********** Analyse de l'ordonnancement Round Robin avec 3 taches ******************/
+void TaskBlink(void *pvParameters) 
+{
+  bool shouldWait = true;
+  //Retrieve Pin number
+  uint8_t pin = *((uint8_t*)pvParameters);
+
+  Serial.printf("Starting on : %hhd \n", pin);
+  vTaskDelay(pdMS_TO_TICKS(2));
+
+  pinMode(pin, OUTPUT);
+
+  for (;;) {
+    for (uint32_t i = 0; i < 40000; i++) {
+      digitalWrite(pin, HIGH);
+      digitalWrite(pin, LOW);
+    }
+    vTaskDelay(pdMS_TO_TICKS(10));
+  }
+}
+
+
+
+
+
+
+/*********** vTaskDelay Vs vTaskDelayUntil ******************/
 void TaskBlinkPeriodic(void *pvParameters) 
 {
   bool shouldWait = true;
   //Retrieve Pin number
   uint8_t pin = *((uint8_t*)pvParameters);
   pinMode(pin, OUTPUT);
+  //vTaskDelayUntil()
   
   for (;;)
   {
@@ -67,26 +119,5 @@ void TaskBlinkPeriodic(void *pvParameters)
     }
     digitalWrite(pin, LOW);
     vTaskDelay(pdMS_TO_TICKS(400));
-  }
-}
-
-
-void TaskBlink(void *pvParameters) 
-{
-  bool shouldWait = true;
-  //Retrieve Pin number
-  uint8_t pin = *((uint8_t*)pvParameters);
-
-  Serial.printf("Starting on : %hhd", pin);
-  vTaskDelay(pdMS_TO_TICKS(2));
-
-  pinMode(pin, OUTPUT);
-
-  for (;;) {
-    for (uint32_t i = 0; i < 80000; i++) {
-      digitalWrite(pin, HIGH);
-      digitalWrite(pin, LOW);
-    }
-    vTaskDelay(pdMS_TO_TICKS(10));
   }
 }
