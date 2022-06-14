@@ -14,21 +14,28 @@
 void waitingTask(void *pvParameters);
 
 #define PUSH_BUTTON_S1 14
+#ifndef LED_BUILTIN
+  #define LED_BUILTIN 13
+#endif
 
 //A compléter
+bool LedState = false;
+SemaphoreHandle_t syncSema;
 
 void IRAM_ATTR toggleLED() {
   static BaseType_t xLastTick = 0;
   BaseType_t xCurrentTick;
   //Déclaration de variable à compléter
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
   xCurrentTick = xTaskGetTickCountFromISR();
   if (pdTICKS_TO_MS(xCurrentTick - xLastTick) > 200) {
-    //A compléter
+    LedState = !LedState;
+    digitalWrite(LED_BUILTIN, LedState);
+    xSemaphoreGiveFromISR(syncSema,&xHigherPriorityTaskWoken); //Give info to waiting task
   }
   xLastTick = xCurrentTick;
-  
-  //A compléter
+  //portYIELD_FROM_ISR(); //Call the higher priority task when ISR is finished instead of going back to the previous task
 }
 
 void setup() {
@@ -38,7 +45,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PUSH_BUTTON_S1, INPUT);
   
-  syncSema = xSemaphoreCreateBinary();
+  syncSema = xSemaphoreCreateBinary(); //Create Semaphore Binary
 
   xTaskCreatePinnedToCore(
     waitingTask,
@@ -50,7 +57,7 @@ void setup() {
     APP_CORE
   );
 
-  attachInterrupt(digitalPinToInterrupt(PUSH_BUTTON_S1), toggleLED, ...);       //A compléter
+  attachInterrupt(digitalPinToInterrupt(PUSH_BUTTON_S1), toggleLED, FALLING); //Front descendant
 }
 
 void loop() { 
@@ -60,7 +67,8 @@ void loop() {
 void waitingTask(void *pvParameters) {
 
   for (;;) {
-    //A Compléter
+    xSemaphoreTake(syncSema,portMAX_DELAY ); //Wait indefinitely 
+
     Serial.println("Task did wake up");
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
