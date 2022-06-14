@@ -61,9 +61,10 @@ static void LedTask(void *pvParameters) {
   for (;;) {
     xQueueReceive(queue, (void *)&event, portMAX_DELAY);     //Read from queue
     if (event) {
-      led ^= true;
+      led ^= true; //led = led 'OU EXCLUSIF' TRUE   (ou led = !led)
       digitalWrite(LED_BUILTIN, led);
-    } else {
+    } 
+    else {
       for(int i=1;i<=10;i++){ //Flash 10 pulses on Blue LED
         digitalWrite(LED_BLUE,HIGH);
         vTaskDelay(pdMS_TO_TICKS(50));
