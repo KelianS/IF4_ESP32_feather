@@ -1,6 +1,6 @@
-//Kélian SERMET
-//14/06/2022
-//http://insa.pages.univ-lyon1.fr/freertos/activites/tp4/
+// Kélian SERMET
+// 14/06/2022
+// http://insa.pages.univ-lyon1.fr/freertos/activites/tp4/
 
 #include <Arduino.h>
 
@@ -15,90 +15,77 @@ void waitingTask(void *pvParameters);
 
 #define PUSH_BUTTON_S1 14
 #ifndef LED_BUILTIN
-  #define LED_BUILTIN 13
+#define LED_BUILTIN 13
 #endif
 
-//A compléter
+// A compléter
 bool LedState = false;
 SemaphoreHandle_t syncSema;
 
-void IRAM_ATTR toggleLED() {
+void IRAM_ATTR toggleLED()
+{
   static BaseType_t xLastTick = 0;
   BaseType_t xCurrentTick;
-  //Déclaration de variable à compléter
+  // Déclaration de variable à compléter
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+  // Serial.print("ISR task : "); Serial.print(pcTaskGetName(NULL)); Serial.print(" - Coeur : ");  Serial.print(xPortGetCoreID()); Serial.print(" - Priority : "); Serial.println(uxTaskPriorityGet(NULL));
+
   xCurrentTick = xTaskGetTickCountFromISR();
-  if (pdTICKS_TO_MS(xCurrentTick - xLastTick) > 200) {
+  if (pdTICKS_TO_MS(xCurrentTick - xLastTick) > 200)
+  {
     LedState = !LedState;
     digitalWrite(LED_BUILTIN, LedState);
-    xSemaphoreGiveFromISR(syncSema,&xHigherPriorityTaskWoken); //Give info to waiting task
+    xSemaphoreGiveFromISR(syncSema, &xHigherPriorityTaskWoken); // Give info to waiting task
+    if (xHigherPriorityTaskWoken == pdTRUE)
+      portYIELD_FROM_ISR(); // Call the higher priority task when ISR is finished instead of going back to the previous task
   }
   xLastTick = xCurrentTick;
-  //portYIELD_FROM_ISR(); //Call the higher priority task when ISR is finished instead of going back to the previous task
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
-  while(!Serial) {}
+  while (!Serial)
+  {
+  }
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PUSH_BUTTON_S1, INPUT);
-  
-  syncSema = xSemaphoreCreateBinary(); //Create Semaphore Binary
+
+  syncSema = xSemaphoreCreateBinary(); // Create Semaphore Binary
 
   xTaskCreatePinnedToCore(
-    waitingTask,
-    "Waiting task",
-    8192,
-    nullptr,
-    5,
-    nullptr,
-    APP_CORE
-  );
+      waitingTask,
+      "Waiting task",
+      8192,
+      nullptr,
+      5,
+      nullptr,
+      APP_CORE);
 
-  attachInterrupt(digitalPinToInterrupt(PUSH_BUTTON_S1), toggleLED, FALLING); //Front descendant
+  attachInterrupt(digitalPinToInterrupt(PUSH_BUTTON_S1), toggleLED, FALLING); // Front descendant
 }
 
-void loop() { 
-    vTaskDelete(nullptr); 
+void loop()
+{
+  vTaskDelete(nullptr);
 }
 
-void waitingTask(void *pvParameters) {
+void waitingTask(void *pvParameters)
+{
 
-  for (;;) {
-    xSemaphoreTake(syncSema,portMAX_DELAY ); //Wait indefinitely 
+  for (;;)
+  {
+    xSemaphoreTake(syncSema, portMAX_DELAY); // Wait indefinitely
 
     Serial.println("Task did wake up");
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /****************** OLD TO DELETE ***********************/
-
+/*
 #if CONFIG_FREERTOS_UNICORE
 #define APP_CORE 0
 #else
@@ -157,14 +144,14 @@ static void LedTask(void *pvParameters) {
     if (event) {
       led ^= true; //led = led 'OU EXCLUSIF' TRUE   (ou led = !led)
       digitalWrite(LED_BUILTIN, led);
-    } 
+    }
     else {
       for(int i=1;i<=10;i++){ //Flash 10 pulses on Blue LED
         digitalWrite(LED_BLUE,HIGH);
         vTaskDelay(pdMS_TO_TICKS(50));
         digitalWrite(LED_BLUE,LOW);
         vTaskDelay(pdMS_TO_TICKS(200));
-      }    
+      }
     }
   }
 }
@@ -201,4 +188,4 @@ void setup() {
 void loop() {
   // Tout est fait dans les tâches
   vTaskDelete(nullptr);
-}
+}*/
